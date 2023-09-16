@@ -2,13 +2,11 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"github.com/k13w/go-boilerplate/core/model"
+	database "github.com/k13w/go-boilerplate/infrastructure/config"
 )
 
-type UserRepositoryImpl struct {
-	Db *sql.DB
-}
+type UserRepositoryImpl struct{}
 
 type IUserRepository interface {
 	Save(ctx context.Context, user model.User)
@@ -19,12 +17,18 @@ func NewUserRepository() *UserRepositoryImpl {
 }
 
 func (b UserRepositoryImpl) Save(ctx context.Context, user model.User) {
-	//tx, err := b.Db.Begin()
-	//helper2.PanicIfError(err)
-	//defer helper2.CommitOrRollback(tx)
+	//sqlArch := database.InitDBConnection()
+	//println("call user repository")
+	//tx, err := sqlArch.Begin()
+	//helper.PanicIfError(err)
+	//defer helper.CommitOrRollback(tx)
 	//
-	//createUserSql := `INSERT INTO "user" (nome, id) VALUES ($1, DEFAULT)`
+	createUserSql := `INSERT INTO public.users (name) VALUES ($1)`
 	//
 	//_, err = tx.ExecContext(ctx, createUserSql, user.Name)
-	//helper2.PanicIfError(err)
+	//helper.PanicIfError(err)
+	err := database.NewStatement(ctx, createUserSql, user.Name).Execute()
+	if err != nil {
+		return
+	}
 }
