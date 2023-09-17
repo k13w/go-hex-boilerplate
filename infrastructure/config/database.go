@@ -18,7 +18,7 @@ const (
 var instance *sql.DB
 
 func InitDBConnection() *sql.DB {
-	db, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5600/postgres?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://go_boilerplate_database_user:V0jqW3FJseDAzhJLyKJUKIKZ5jB2VjMa@dpg-ck3gssnqj8ts73cdmnc0-a:5432/go_boilerplate_database?sslmode=disable")
 	helper.PanicIfError(err)
 
 	err = db.Ping()
@@ -44,12 +44,22 @@ func NewStatement(ctx context.Context, query string, params ...interface{}) *Sta
 
 // Execute apply statement in database
 func (s *Statement) Execute() error {
+	tx, err := instance.Begin()
+	helper.PanicIfError(err)
 	stmt, err := s.createStatement()
 	if err != nil {
 		return err
 	}
 
 	if _, err = stmt.Exec(s.args...); err != nil {
+		errRollback := tx.Rollback()
+		helper.PanicIfError(errRollback)
+		panic(err)
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
 		return err
 	}
 
@@ -57,22 +67,5 @@ func (s *Statement) Execute() error {
 }
 
 func (s *Statement) createStatement() (*sql.Stmt, error) {
-	tx, err := instance.Begin()
-	helper.PanicIfError(err)
-	defer CommitOrRollback(tx)
-
 	return instance.PrepareContext(s.ctx, s.query)
-}
-
-func CommitOrRollback(tx *sql.Tx) {
-	err := recover()
-
-	if err != nil {
-		errRollback := tx.Rollback()
-		helper.PanicIfError(errRollback)
-		panic(err)
-	} else {
-		errCommit := tx.Commit()
-		helper.PanicIfError(errCommit)
-	}
 }
