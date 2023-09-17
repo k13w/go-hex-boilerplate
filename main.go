@@ -17,7 +17,7 @@ func main() {
 
 	routes := router.NewRouter(userController)
 
-	server := http.Server{Addr: "localhost:7000", Handler: routes}
+	server := http.Server{Addr: "0.0.0.0:7000", Handler: routes}
 
 	err := server.ListenAndServe()
 	helper.PanicIfError(err)
