@@ -17,9 +17,9 @@ func NewUserRepository() *UserRepositoryImpl {
 }
 
 func (b UserRepositoryImpl) Save(ctx context.Context, user model.User) {
-	createUserSql := `INSERT INTO public.users (name) VALUES ($1)`
+	createUserSql := `INSERT INTO public.users (name, class) VALUES ($1, $2)`
 
-	err := database.NewStatement(ctx, createUserSql, user.Name).Execute()
+	err := database.NewStatement(ctx, createUserSql, user.Name, user.Class).Execute()
 	if err != nil {
 		return
 	}
